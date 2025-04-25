@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura Acquarello</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Generador de Facturas</h1>
+
+  <form id="facturaForm">
+    <label>Fecha: <input type="date" id="fecha" required></label><br>
+    <label>Desayunos: <input type="number" id="desayunos" required></label><br>
+    <label>Almuerzos: <input type="number" id="almuerzos" required></label><br>
+    <label>Cenas: <input type="number" id="cenas" required></label><br>
+    <label>Bidones: <input type="number" id="bidones" required></label><br>
+
+    <button type="submit">Agregar día</button>
+  </form>
+
+  <button id="generarPDF">Generar PDF Final</button>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
