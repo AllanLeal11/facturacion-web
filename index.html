@@ -5,7 +5,6 @@
   <title>Factura Acquarello</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
 </head>
 <body>
   <h1>Generador de Facturas</h1>
@@ -16,25 +15,34 @@
     <label>Almuerzos: <input type="number" id="almuerzos" required></label><br>
     <label>Cenas: <input type="number" id="cenas" required></label><br>
     <label>Bidones: <input type="number" id="bidones" required></label><br>
-
     <button type="submit">Agregar día</button>
   </form>
 
- <button onclick="descargarPDF()">Descargar PDF</button>
+  <!-- Contenedor del recibo -->
+  <div id="recibo">
+    <!-- Aquí se debería renderizar el contenido de la factura -->
+    <p><strong>Factura generada aparecerá aquí.</strong></p>
+  </div>
 
+  <!-- Botón para descargar como PDF -->
+  <button onclick="descargarPDF()">Descargar PDF</button>
 
+  <!-- Script principal -->
   <script type="module" src="script.js"></script>
-  function descargarPDF() {
-    const elemento = document.getElementById("recibo"); // Asegúrate que este sea el id de tu recibo
-    const opciones = {
-        margin:       0.5,
-        filename:     'recibo.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opciones).from(elemento).save();
-}
 
+  <!-- Función para descargar PDF -->
+  <script>
+    function descargarPDF() {
+      const elemento = document.getElementById("recibo");
+      const opciones = {
+        margin: 0.5,
+        filename: 'recibo.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opciones).from(elemento).save();
+    }
+  </script>
 </body>
 </html>
