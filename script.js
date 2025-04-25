@@ -3,7 +3,7 @@ import autoTable from 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/+esm'
 
 const registros = [];
 
-document.getElementById('facturaForm').addEventListener('submit', function(e) {
+document.getElementById('facturaForm').addEventListener('submit', function (e) {
   e.preventDefault();
 
   const fecha = document.getElementById('fecha').value;
@@ -18,7 +18,7 @@ document.getElementById('facturaForm').addEventListener('submit', function(e) {
   e.target.reset();
 });
 
-document.getElementById('generarPDF').addEventListener('click', () => {
+document.getElementById('generarPDF').addEventListener('click', async () => {
   if (registros.length === 0) {
     alert('No hay días registrados.');
     return;
@@ -50,12 +50,13 @@ document.getElementById('generarPDF').addEventListener('click', () => {
         ['Almuerzos', r.almuerzos, precios.almuerzo, totalAlm],
         ['Cenas', r.cenas, precios.cena, totalCen],
         ['Bidones', r.bidones, precios.bidon, totalBid],
-        ['', '', 'Subtotal', subtotal],
+        ['', '', 'Subtotal', subtotal.toFixed(2)],
         ['', '', 'IVA (13%)', iva.toFixed(2)],
-        ['', '', 'Total', total.toFixed(2)]
-      ]
+        ['', '', 'Total', total.toFixed(2)],
+      ],
     });
   });
 
   doc.save('factura_multiples_dias.pdf');
 });
+
