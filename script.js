@@ -59,4 +59,15 @@ document.getElementById('generarPDF').addEventListener('click', async () => {
 
   doc.save('factura_multiples_dias.pdf');
 });
+function descargarPDF() {
+    const elemento = document.getElementById("recibo"); // Asegúrate que este sea el id de tu recibo
+    const opciones = {
+        margin:       0.5,
+        filename:     'recibo.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opciones).from(elemento).save();
+}
 
