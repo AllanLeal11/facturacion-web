@@ -1,8 +1,9 @@
 // script.js
 
 // Array para almacenar los registros
-tconst registros = [];
+const registros = [];
 
+// Evento submit del formulario
 document.getElementById('facturaForm').addEventListener('submit', e => {
   e.preventDefault();
 
@@ -13,7 +14,8 @@ document.getElementById('facturaForm').addEventListener('submit', e => {
   const cenas = parseInt(document.getElementById('cenas').value, 10);
   const bidones = parseInt(document.getElementById('bidones').value, 10);
 
-  // Agregar registro al array\ n  registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
+  // Agregar registro al array
+  registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
 
   // Mostrar recibo actualizado
   mostrarRecibo();
@@ -31,7 +33,7 @@ function mostrarRecibo() {
 
   // Calcular subtotal combinado para todos los días
   let subtotalCombinado = 0;
-  registros.forEach((r) => {
+  registros.forEach(r => {
     const totalDes = r.desayunos * precios.desayuno;
     const totalAlm = r.almuerzos * precios.almuerzo;
     const totalCen = r.cenas * precios.cena;
@@ -40,7 +42,7 @@ function mostrarRecibo() {
     subtotalCombinado += subtotal;
   });
 
-  // Renderizar cada día con su subtotal, y en el último, agregar IVA y total combinado
+  // Renderizar cada día con su subtotal, y en el último, agregar subtotal combinado, IVA y total final
   registros.forEach((r, i) => {
     const totalDes = r.desayunos * precios.desayuno;
     const totalAlm = r.almuerzos * precios.almuerzo;
@@ -48,7 +50,6 @@ function mostrarRecibo() {
     const totalBid = r.bidones * precios.bidon;
     const subtotal = totalDes + totalAlm + totalCen + totalBid;
 
-    // Crear bloque HTML con datos de la factura
     const bloque = document.createElement('div');
     let html = `
       <h3>Factura Acquarello - Día ${i + 1}</h3>
@@ -65,7 +66,6 @@ function mostrarRecibo() {
           <tr><td colspan="3"><strong>Subtotal</strong></td><td>${subtotal.toFixed(2)}</td></tr>
     `;
 
-    // Si es el último día, agregar subtotal combinado, IVA y total final
     if (i === registros.length - 1) {
       const ivaTotal = subtotalCombinado * 0.13;
       const totalConIva = subtotalCombinado + ivaTotal;
@@ -90,13 +90,11 @@ function mostrarRecibo() {
 function descargarPDF() {
   const elemento = document.getElementById('recibo');
   const opciones = {
-    margin:       0.5,
-    filename:     'recibo.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    margin: 0.5,
+    filename: 'recibo.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
   html2pdf().set(opciones).from(elemento).save();
 }
-
-
