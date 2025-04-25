@@ -4,196 +4,218 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guana Solution Food</title>
+
+  <!-- PWA tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guana Solution Food">
+  <link rel="apple-touch-icon" href="icono.png">
+  <link rel="manifest" href="manifest.json">
+
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #f5f7fa;
+      padding: 1rem;
+      background-color: #f4f4f8;
       color: #333;
     }
+
     h1 {
-      color: #004466;
       text-align: center;
-      margin-bottom: 20px;
+      color: #004466;
     }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+    form, .acciones {
       max-width: 500px;
-      margin: 0 auto 20px auto;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+
     label {
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 0.5rem;
     }
-    input[type="number"], input[type="date"] {
+
+    input {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 15px;
+      padding: 0.4rem;
+      margin-top: 0.2rem;
+      margin-bottom: 1rem;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
     }
+
     button {
+      width: 100%;
+      padding: 0.7rem;
       background-color: #004466;
       color: white;
-      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    button:hover {
-      background-color: #006699;
-    }
-    #registros {
-      margin-top: 30px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .registro {
-      background: white;
-      margin-bottom: 10px;
-      padding: 10px;
       border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      font-weight: bold;
+      cursor: pointer;
     }
-    <!-- Para que se vea como app en Android -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#004466">
-<link rel="icon" sizes="192x192" href="icono.png"> <!-- Usa un ícono PNG -->
-<link rel="manifest" href="manifest.json">
 
+    button:hover {
+      background-color: #006080;
+    }
+
+    .acciones {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (min-width: 600px) {
+      .acciones {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      button {
+        width: auto;
+        flex: 1;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h1>Guana Solution Food</h1>
+<h1>Guana Solution Food</h1>
 
-  <form id="facturaForm">
-    <label>Fecha: <input type="date" id="fecha" required></label>
-    <label>Desayunos: <input type="number" id="desayunos" required></label>
-    <label>Almuerzos: <input type="number" id="almuerzos" required></label>
-    <label>Cenas: <input type="number" id="cenas" required></label>
-    <label>Bidones: <input type="number" id="bidones" required></label>
-    <button type="submit">Agregar Venta</button>
-  </form>
+<form id="facturaForm">
+  <label>Fecha: <input type="date" id="fecha" required></label>
+  <label>Desayunos: <input type="number" id="desayunos" required></label>
+  <label>Almuerzos: <input type="number" id="almuerzos" required></label>
+  <label>Cenas: <input type="number" id="cenas" required></label>
+  <label>Bidones: <input type="number" id="bidones" required></label>
+  <button type="submit">Guardar Venta del Día</button>
+</form>
 
-  <div id="registros"></div>
+<div class="acciones">
+  <button onclick="generarYCompartirPDF()">Descargar/Compartir PDF</button>
+  <button onclick="limpiarRegistros()">Borrar Registros</button>
+</div>
 
-  <div style="text-align:center; margin-top:20px;">
-    <button onclick="descargarPDF()">Descargar PDF</button>
-    <button onclick="borrarTodo()">Borrar Todo</button>
-  </div>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+  const { jsPDF } = window.jspdf;
+  const registros = JSON.parse(localStorage.getItem('ventas')) || [];
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+  document.getElementById('facturaForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-  <script>
-    const { jsPDF } = window.jspdf;
-    let registros = JSON.parse(localStorage.getItem('registros')) || [];
+    const venta = {
+      fecha: document.getElementById('fecha').value,
+      desayunos: +document.getElementById('desayunos').value,
+      almuerzos: +document.getElementById('almuerzos').value,
+      cenas: +document.getElementById('cenas').value,
+      bidones: +document.getElementById('bidones').value
+    };
 
-    const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+    registros.push(venta);
+    localStorage.setItem('ventas', JSON.stringify(registros));
 
-    document.getElementById('facturaForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const fecha = document.getElementById('fecha').value;
-      const desayunos = parseInt(document.getElementById('desayunos').value);
-      const almuerzos = parseInt(document.getElementById('almuerzos').value);
-      const cenas = parseInt(document.getElementById('cenas').value);
-      const bidones = parseInt(document.getElementById('bidones').value);
+    alert('Venta guardada correctamente.');
+    e.target.reset();
+  });
 
-      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
-      localStorage.setItem('registros', JSON.stringify(registros));
-      mostrarRegistros();
-      e.target.reset();
-    });
+  function limpiarRegistros() {
+    if (confirm('¿Seguro que deseas borrar todos los registros?')) {
+      localStorage.removeItem('ventas');
+      alert('Registros eliminados.');
+      location.reload();
+    }
+  }
 
-    function mostrarRegistros() {
-      const contenedor = document.getElementById('registros');
-      contenedor.innerHTML = '';
-      registros.forEach((r, i) => {
-        const subtotal = (r.desayunos * precios.desayuno) + (r.almuerzos * precios.almuerzo) + (r.cenas * precios.cena) + (r.bidones * precios.bidon);
-        contenedor.innerHTML += `
-          <div class="registro">
-            <strong>Fecha:</strong> ${r.fecha}<br>
-            <strong>Desayunos:</strong> ${r.desayunos} - ₡${(r.desayunos * precios.desayuno).toLocaleString()}<br>
-            <strong>Almuerzos:</strong> ${r.almuerzos} - ₡${(r.almuerzos * precios.almuerzo).toLocaleString()}<br>
-            <strong>Cenas:</strong> ${r.cenas} - ₡${(r.cenas * precios.cena).toLocaleString()}<br>
-            <strong>Bidones:</strong> ${r.bidones} - ₡${(r.bidones * precios.bidon).toLocaleString()}<br>
-            <strong>Subtotal:</strong> ₡${subtotal.toLocaleString()}
-          </div>
-        `;
-      });
+  function formatear(valor) {
+    return '₡' + valor.toFixed(2);
+  }
+
+  function generarYCompartirPDF() {
+    if (registros.length === 0) {
+      alert('No hay registros guardados.');
+      return;
     }
 
-    function descargarPDF() {
-      if (registros.length === 0) {
-        alert('No hay ventas registradas.');
-        return;
-      }
+    const doc = new jsPDF();
+    const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+    let totalFinal = 0;
 
-      const doc = new jsPDF();
-      let totalGeneral = 0;
+    registros.forEach((r, i) => {
+      const subtotal = r.desayunos * precios.desayuno +
+                       r.almuerzos * precios.almuerzo +
+                       r.cenas * precios.cena +
+                       r.bidones * precios.bidon;
 
-      registros.forEach((r, i) => {
-        const subtotal = (r.desayunos * precios.desayuno) + (r.almuerzos * precios.almuerzo) + (r.cenas * precios.cena) + (r.bidones * precios.bidon);
-        totalGeneral += subtotal;
+      totalFinal += subtotal;
 
-        if (i > 0) doc.addPage();
-        doc.setFontSize(16);
-        doc.text("Guana Solution Food", 20, 20);
-        doc.setFontSize(12);
-        doc.text(`Fecha: ${r.fecha}`, 20, 30);
+      if (i > 0) doc.addPage();
 
-        doc.autoTable({
-          startY: 40,
-          head: [['Ítem', 'Cantidad', 'Precio Unitario', 'Total']],
-          body: [
-            ['Desayunos', r.desayunos, `₡${precios.desayuno.toLocaleString()}`, `₡${(r.desayunos * precios.desayuno).toLocaleString()}`],
-            ['Almuerzos', r.almuerzos, `₡${precios.almuerzo.toLocaleString()}`, `₡${(r.almuerzos * precios.almuerzo).toLocaleString()}`],
-            ['Cenas', r.cenas, `₡${precios.cena.toLocaleString()}`, `₡${(r.cenas * precios.cena).toLocaleString()}`],
-            ['Bidones', r.bidones, `₡${precios.bidon.toLocaleString()}`, `₡${(r.bidones * precios.bidon).toLocaleString()}`],
-            [{ content: 'Subtotal', colSpan: 3, styles: { halign: 'right' } }, `₡${subtotal.toLocaleString()}`],
-          ]
-        });
-      });
-
-      const iva = totalGeneral * 0.13;
-      const totalConIVA = totalGeneral + iva;
-
-      doc.addPage();
-      doc.setFontSize(16);
-      doc.text('Resumen Final - Guana Solution Food', 20, 20);
+      doc.setFontSize(14);
+      doc.text("Guana Solution Food", 20, 20);
+      doc.text(`Fecha: ${r.fecha}`, 20, 30);
 
       doc.autoTable({
-        startY: 30,
-        head: [['Concepto', 'Monto']],
+        startY: 40,
+        head: [['Ítem', 'Cantidad', 'Precio U', 'Total']],
         body: [
-          ['Subtotal general', `₡${totalGeneral.toLocaleString()}`],
-          ['IVA (13%)', `₡${iva.toFixed(0).toLocaleString()}`],
-          ['Total general', `₡${totalConIVA.toFixed(0).toLocaleString()}`],
+          ['Desayunos', r.desayunos, formatear(precios.desayuno), formatear(r.desayunos * precios.desayuno)],
+          ['Almuerzos', r.almuerzos, formatear(precios.almuerzo), formatear(r.almuerzos * precios.almuerzo)],
+          ['Cenas', r.cenas, formatear(precios.cena), formatear(r.cenas * precios.cena)],
+          ['Bidones', r.bidones, formatear(precios.bidon), formatear(r.bidones * precios.bidon)],
+          ['', '', 'Subtotal', formatear(subtotal)]
         ]
       });
+    });
 
-      doc.save('factura_guana_solution_food.pdf');
-    }
+    const iva = totalFinal * 0.13;
+    const totalConIVA = totalFinal + iva;
 
-    function borrarTodo() {
-      if (confirm('¿Estás seguro de que quieres borrar todos los registros?')) {
-        registros = [];
-        localStorage.removeItem('registros');
-        mostrarRegistros();
+    doc.addPage();
+    doc.setFontSize(16);
+    doc.text("Resumen Final", 20, 30);
+    doc.autoTable({
+      startY: 40,
+      head: [['Descripción', 'Monto']],
+      body: [
+        ['Total neto', formatear(totalFinal)],
+        ['IVA (13%)', formatear(iva)],
+        ['Total con IVA', formatear(totalConIVA)]
+      ]
+    });
+
+    doc.output('blob').then(blob => {
+      const file = new File([blob], "factura.pdf", { type: "application/pdf" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title: "Factura - Guana Solution Food",
+          text: "Factura generada",
+          files: [file]
+        }).catch(() => {
+          descargarAlternativamente(blob);
+        });
+      } else {
+        descargarAlternativamente(blob);
       }
+    });
+
+    function descargarAlternativamente(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "factura.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
     }
-
-    mostrarRegistros();
-  </script>
-
+  }
+</script>
 </body>
 </html>
-
