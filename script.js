@@ -1,49 +1,61 @@
-import { jsPDF } from './js/jspdf.umd.min.js';
-import autoTable from 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/+esm';
+// script.js
 
-const registros = [];
+// Array para almacenar los registros
+tconst registros = [];
 
-document.getElementById('facturaForm').addEventListener('submit', function (e) {
+document.getElementById('facturaForm').addEventListener('submit', e => {
   e.preventDefault();
 
+  // Obtener valores del formulario
   const fecha = document.getElementById('fecha').value;
-  const desayunos = parseInt(document.getElementById('desayunos').value);
-  const almuerzos = parseInt(document.getElementById('almuerzos').value);
-  const cenas = parseInt(document.getElementById('cenas').value);
-  const bidones = parseInt(document.getElementById('bidones').value);
+  const desayunos = parseInt(document.getElementById('desayunos').value, 10);
+  const almuerzos = parseInt(document.getElementById('almuerzos').value, 10);
+  const cenas = parseInt(document.getElementById('cenas').value, 10);
+  const bidones = parseInt(document.getElementById('bidones').value, 10);
 
-  const registro = { fecha, desayunos, almuerzos, cenas, bidones };
-  registros.push(registro);
+  // Agregar registro al array\ n  registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
 
+  // Mostrar recibo actualizado
   mostrarRecibo();
 
-  alert('Día agregado correctamente.');
+  // Resetear formulario y notificar
   e.target.reset();
+  alert('Día agregado correctamente.');
 });
 
+// Función para renderizar los registros en pantalla
 function mostrarRecibo() {
   const precios = { desayuno: 2500, almuerzo: 3000, cena: 2800, bidon: 2041 };
   const reciboDiv = document.getElementById('recibo');
-  reciboDiv.innerHTML = ''; // Limpiar
+  reciboDiv.innerHTML = ''; // limpiar contenedor
 
+  // Calcular subtotal combinado para todos los días
+  let subtotalCombinado = 0;
+  registros.forEach((r) => {
+    const totalDes = r.desayunos * precios.desayuno;
+    const totalAlm = r.almuerzos * precios.almuerzo;
+    const totalCen = r.cenas * precios.cena;
+    const totalBid = r.bidones * precios.bidon;
+    const subtotal = totalDes + totalAlm + totalCen + totalBid;
+    subtotalCombinado += subtotal;
+  });
+
+  // Renderizar cada día con su subtotal, y en el último, agregar IVA y total combinado
   registros.forEach((r, i) => {
     const totalDes = r.desayunos * precios.desayuno;
     const totalAlm = r.almuerzos * precios.almuerzo;
     const totalCen = r.cenas * precios.cena;
     const totalBid = r.bidones * precios.bidon;
     const subtotal = totalDes + totalAlm + totalCen + totalBid;
-    const iva = subtotal * 0.13;
-    const total = subtotal + iva;
 
+    // Crear bloque HTML con datos de la factura
     const bloque = document.createElement('div');
-    bloque.innerHTML = `
+    let html = `
       <h3>Factura Acquarello - Día ${i + 1}</h3>
       <p><strong>Fecha:</strong> ${r.fecha}</p>
-      <table border="1" cellspacing="0" cellpadding="4">
+      <table>
         <thead>
-          <tr>
-            <th>Ítem</th><th>Cantidad</th><th>Precio U</th><th>Total</th>
-          </tr>
+          <tr><th>Ítem</th><th>Cantidad</th><th>Precio U</th><th>Total</th></tr>
         </thead>
         <tbody>
           <tr><td>Desayunos</td><td>${r.desayunos}</td><td>${precios.desayuno}</td><td>${totalDes}</td></tr>
@@ -51,57 +63,40 @@ function mostrarRecibo() {
           <tr><td>Cenas</td><td>${r.cenas}</td><td>${precios.cena}</td><td>${totalCen}</td></tr>
           <tr><td>Bidones</td><td>${r.bidones}</td><td>${precios.bidon}</td><td>${totalBid}</td></tr>
           <tr><td colspan="3"><strong>Subtotal</strong></td><td>${subtotal.toFixed(2)}</td></tr>
-          <tr><td colspan="3"><strong>IVA (13%)</strong></td><td>${iva.toFixed(2)}</td></tr>
-          <tr><td colspan="3"><strong>Total</strong></td><td>${total.toFixed(2)}</td></tr>
+    `;
+
+    // Si es el último día, agregar subtotal combinado, IVA y total final
+    if (i === registros.length - 1) {
+      const ivaTotal = subtotalCombinado * 0.13;
+      const totalConIva = subtotalCombinado + ivaTotal;
+      html += `
+          <tr><td colspan="3"><strong>Subtotal Combinado</strong></td><td>${subtotalCombinado.toFixed(2)}</td></tr>
+          <tr><td colspan="3"><strong>IVA (13%)</strong></td><td>${ivaTotal.toFixed(2)}</td></tr>
+          <tr><td colspan="3"><strong>Total con IVA</strong></td><td>${totalConIva.toFixed(2)}</td></tr>
+      `;
+    }
+
+    html += `
         </tbody>
       </table>
       <hr>
     `;
+    bloque.innerHTML = html;
     reciboDiv.appendChild(bloque);
   });
 }
 
-// Tu función para generar PDF directamente con jsPDF (opcional)
-document.getElementById('generarPDF')?.addEventListener('click', async () => {
-  if (registros.length === 0) {
-    alert('No hay días registrados.');
-    return;
-  }
-
-  const doc = new jsPDF();
-  const precios = { desayuno: 2500, almuerzo: 3000, cena: 2800, bidon: 2041 };
-
-  registros.forEach((r, i) => {
-    const totalDes = r.desayunos * precios.desayuno;
-    const totalAlm = r.almuerzos * precios.almuerzo;
-    const totalCen = r.cenas * precios.cena;
-    const totalBid = r.bidones * precios.bidon;
-    const subtotal = totalDes + totalAlm + totalCen + totalBid;
-    const iva = subtotal * 0.13;
-    const total = subtotal + iva;
-
-    if (i > 0) doc.addPage();
-
-    doc.setFontSize(14);
-    doc.text(`Factura Acquarello`, 20, 20);
-    doc.text(`Fecha: ${r.fecha}`, 20, 30);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [['Ítem', 'Cantidad', 'Precio U', 'Total']],
-      body: [
-        ['Desayunos', r.desayunos, precios.desayuno, totalDes],
-        ['Almuerzos', r.almuerzos, precios.almuerzo, totalAlm],
-        ['Cenas', r.cenas, precios.cena, totalCen],
-        ['Bidones', r.bidones, precios.bidon, totalBid],
-        ['', '', 'Subtotal', subtotal.toFixed(2)],
-        ['', '', 'IVA (13%)', iva.toFixed(2)],
-        ['', '', 'Total', total.toFixed(2)],
-      ],
-    });
-  });
-
-  doc.save('factura_multiples_dias.pdf');
-});
+// Función para descargar el contenido de #recibo como PDF
+function descargarPDF() {
+  const elemento = document.getElementById('recibo');
+  const opciones = {
+    margin:       0.5,
+    filename:     'recibo.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opciones).from(elemento).save();
+}
 
 
