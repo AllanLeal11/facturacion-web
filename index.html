@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guana Solution Food</title>
+  <link rel="manifest" href="manifest.json">
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -23,7 +24,7 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 500px;
-      margin: 0 auto 20px auto;
+      margin: 0 auto 20px;
     }
     label {
       display: block;
@@ -36,6 +37,14 @@
       margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
+    }
+    #totals {
+      background: #eef;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     button {
       background-color: #004466;
@@ -50,7 +59,7 @@
       background-color: #006699;
     }
     #registros {
-      margin-top: 30px;
+      margin-top: 20px;
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
@@ -62,16 +71,9 @@
       border-radius: 8px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    <!-- Para que se vea como app en Android -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#004466">
-<link rel="icon" sizes="192x192" href="icono.png"> <!-- Usa un ícono PNG -->
-<link rel="manifest" href="manifest.json">
-
   </style>
 </head>
 <body>
-
   <h1>Guana Solution Food</h1>
 
   <form id="facturaForm">
@@ -83,6 +85,12 @@
     <button type="submit">Agregar Venta</button>
   </form>
 
+  <div id="totals" style="display:none;">
+    <strong>Subtotal:</strong> <span id="subtotalDisplay"></span><br>
+    <strong>IVA (13%):</strong> <span id="ivaDisplay"></span><br>
+    <strong>Total:</strong> <span id="totalDisplay"></span>
+  </div>
+
   <div id="registros"></div>
 
   <div style="text-align:center; margin-top:20px;">
@@ -92,108 +100,108 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
-
   <script>
     const { jsPDF } = window.jspdf;
     let registros = JSON.parse(localStorage.getItem('registros')) || [];
-
     const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
 
     document.getElementById('facturaForm').addEventListener('submit', function (e) {
       e.preventDefault();
       const fecha = document.getElementById('fecha').value;
-      const desayunos = parseInt(document.getElementById('desayunos').value);
-      const almuerzos = parseInt(document.getElementById('almuerzos').value);
-      const cenas = parseInt(document.getElementById('cenas').value);
-      const bidones = parseInt(document.getElementById('bidones').value);
+      const desayunos = +document.getElementById('desayunos').value;
+      const almuerzos = +document.getElementById('almuerzos').value;
+      const cenas = +document.getElementById('cenas').value;
+      const bidones = +document.getElementById('bidones').value;
 
-      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
+      const totalDes = desayunos * precios.desayuno;
+      const totalAlm = almuerzos * precios.almuerzo;
+      const totalCen = cenas * precios.cena;
+      const totalBid = bidones * precios.bidon;
+      const subtotal = totalDes + totalAlm + totalCen + totalBid;
+      const iva = subtotal * 0.13;
+      const total = subtotal + iva;
+
+      registros.push({ fecha, desayunos, almuerzos, cenas, bidones, subtotal, iva, total });
       localStorage.setItem('registros', JSON.stringify(registros));
       mostrarRegistros();
-      e.target.reset();
+      mostrarTotals(subtotal, iva, total);
+      this.reset();
     });
+
+    function mostrarTotals(sub, iva, tot) {
+      document.getElementById('subtotalDisplay').textContent = `₡${sub.toLocaleString()}`;
+      document.getElementById('ivaDisplay').textContent = `₡${iva.toLocaleString()}`;
+      document.getElementById('totalDisplay').textContent = `₡${tot.toLocaleString()}`;
+      document.getElementById('totals').style.display = 'block';
+    }
 
     function mostrarRegistros() {
       const contenedor = document.getElementById('registros');
       contenedor.innerHTML = '';
-      registros.forEach((r, i) => {
-        const subtotal = (r.desayunos * precios.desayuno) + (r.almuerzos * precios.almuerzo) + (r.cenas * precios.cena) + (r.bidones * precios.bidon);
+      registros.forEach(r => {
         contenedor.innerHTML += `
           <div class="registro">
             <strong>Fecha:</strong> ${r.fecha}<br>
-            <strong>Desayunos:</strong> ${r.desayunos} - ₡${(r.desayunos * precios.desayuno).toLocaleString()}<br>
-            <strong>Almuerzos:</strong> ${r.almuerzos} - ₡${(r.almuerzos * precios.almuerzo).toLocaleString()}<br>
-            <strong>Cenas:</strong> ${r.cenas} - ₡${(r.cenas * precios.cena).toLocaleString()}<br>
-            <strong>Bidones:</strong> ${r.bidones} - ₡${(r.bidones * precios.bidon).toLocaleString()}<br>
-            <strong>Subtotal:</strong> ₡${subtotal.toLocaleString()}
+            <strong>Desayunos:</strong> ${r.desayunos} - ₡${(r.desayunos*precios.desayuno).toLocaleString()}<br>
+            <strong>Almuerzos:</strong> ${r.almuerzos} - ₡${(r.almuerzos*precios.almuerzo).toLocaleString()}<br>
+            <strong>Cenas:</strong> ${r.cenas} - ₡${(r.cenas*precios.cena).toLocaleString()}<br>
+            <strong>Bidones:</strong> ${r.bidones} - ₡${(r.bidones*precios.bidon).toLocaleString()}<br>
+            <strong>Subtotal:</strong> ₡${r.subtotal.toLocaleString()}<br>
+            <strong>IVA:</strong> ₡${r.iva.toLocaleString()}<br>
+            <strong>Total:</strong> ₡${r.total.toLocaleString()}
           </div>
         `;
       });
     }
 
     function descargarPDF() {
-      if (registros.length === 0) {
-        alert('No hay ventas registradas.');
-        return;
-      }
-
+      if (!registros.length) return alert('No hay ventas registradas.');
       const doc = new jsPDF();
-      let totalGeneral = 0;
+      const head = ['Fecha','Ítem','Cantidad','Precio U','Total'];
+      const body = [];
+      let subtotalGeneral = 0;
 
-      registros.forEach((r, i) => {
-        const subtotal = (r.desayunos * precios.desayuno) + (r.almuerzos * precios.almuerzo) + (r.cenas * precios.cena) + (r.bidones * precios.bidon);
-        totalGeneral += subtotal;
-
-        if (i > 0) doc.addPage();
-        doc.setFontSize(16);
-        doc.text("Guana Solution Food", 20, 20);
-        doc.setFontSize(12);
-        doc.text(`Fecha: ${r.fecha}`, 20, 30);
-
-        doc.autoTable({
-          startY: 40,
-          head: [['Ítem', 'Cantidad', 'Precio Unitario', 'Total']],
-          body: [
-            ['Desayunos', r.desayunos, `₡${precios.desayuno.toLocaleString()}`, `₡${(r.desayunos * precios.desayuno).toLocaleString()}`],
-            ['Almuerzos', r.almuerzos, `₡${precios.almuerzo.toLocaleString()}`, `₡${(r.almuerzos * precios.almuerzo).toLocaleString()}`],
-            ['Cenas', r.cenas, `₡${precios.cena.toLocaleString()}`, `₡${(r.cenas * precios.cena).toLocaleString()}`],
-            ['Bidones', r.bidones, `₡${precios.bidon.toLocaleString()}`, `₡${(r.bidones * precios.bidon).toLocaleString()}`],
-            [{ content: 'Subtotal', colSpan: 3, styles: { halign: 'right' } }, `₡${subtotal.toLocaleString()}`],
-          ]
-        });
+      registros.forEach(r => {
+        subtotalGeneral += r.subtotal;
+        body.push([r.fecha,'Desayunos',r.desayunos,`₡${precios.desayuno}`,`₡${(r.desayunos*precios.desayuno).toLocaleString()}`]);
+        body.push([r.fecha,'Almuerzos',r.almuerzos,`₡${precios.almuerzo}`,`₡${(r.almuerzos*precios.almuerzo).toLocaleString()}`]);
+        body.push([r.fecha,'Cenas',r.cenas,`₡${precios.cena}`,`₡${(r.cenas*precios.cena).toLocaleString()}`]);
+        body.push([r.fecha,'Bidones',r.bidones,`₡${precios.bidon}`,`₡${(r.bidones*precios.bidon).toLocaleString()}`]);
+        body.push(['','Subtotal','','',`₡${r.subtotal.toLocaleString()}`]);
+        body.push(['','','','','']);
       });
 
-      const iva = totalGeneral * 0.13;
-      const totalConIVA = totalGeneral + iva;
+      doc.autoTable({ head:[head], body, startY:20, margin:{bottom:30} });
 
+      const ivaTotal = subtotalGeneral * 0.13;
+      const totalConIVA = subtotalGeneral + ivaTotal;
       doc.addPage();
       doc.setFontSize(16);
-      doc.text('Resumen Final - Guana Solution Food', 20, 20);
-
+      doc.text('Resumen Final',20,20);
       doc.autoTable({
-        startY: 30,
-        head: [['Concepto', 'Monto']],
+        startY:30,
         body: [
-          ['Subtotal general', `₡${totalGeneral.toLocaleString()}`],
-          ['IVA (13%)', `₡${iva.toFixed(0).toLocaleString()}`],
-          ['Total general', `₡${totalConIVA.toFixed(0).toLocaleString()}`],
+          ['Subtotal General',`₡${subtotalGeneral.toLocaleString()}`],
+          ['IVA (13%)',`₡${ivaTotal.toLocaleString()}`],
+          ['Total con IVA',`₡${totalConIVA.toLocaleString()}`]
         ]
       });
 
-      doc.save('factura_guana_solution_food.pdf');
+      doc.save('Guana_Solution_Food.pdf');
     }
 
     function borrarTodo() {
-      if (confirm('¿Estás seguro de que quieres borrar todos los registros?')) {
+      if (confirm('¿Deseas borrar todo?')) {
         registros = [];
         localStorage.removeItem('registros');
         mostrarRegistros();
+        document.getElementById('totals').style.display = 'none';
       }
     }
 
     mostrarRegistros();
   </script>
-
 </body>
 </html>
+
 
