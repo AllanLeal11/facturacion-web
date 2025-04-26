@@ -96,6 +96,7 @@
   <div style="text-align:center; margin-top:20px;">
     <button onclick="descargarPDF()">Descargar PDF</button>
     <button onclick="borrarTodo()">Borrar Todo</button>
+    <button onclick="descargarCSV()">Descargar CSV</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -190,6 +191,23 @@
       doc.save('Guana_Solution_Food.pdf');
     }
 
+    function descargarCSV() {
+      if (!registros.length) return alert('No hay ventas registradas.');
+      let csvContent = 'Fecha,Desayunos,Almuerzos,Cenas,Bidones,Subtotal,IVA,Total\n';
+      registros.forEach(r => {
+        csvContent += `${r.fecha},${r.desayunos},${r.almuerzos},${r.cenas},${r.bidones},${r.subtotal},${r.iva},${r.total}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'Guana_Solution_Food.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     function borrarTodo() {
       if (confirm('¿Deseas borrar todo?')) {
         registros = [];
@@ -203,5 +221,3 @@
   </script>
 </body>
 </html>
-
-
