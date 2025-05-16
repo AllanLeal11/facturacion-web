@@ -1,226 +1,209 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7217968499057838"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Guana Solution Food</title>
-  <link rel="manifest" href="manifest.json">
+  <title>Guanafood – Control de Ventas</title>
+  <!-- Favicon -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f7fa;
-      color: #333;
-    }
-    h1 {
-      color: #004466;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 500px;
-      margin: 0 auto 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    input[type="number"], input[type="date"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    #totals {
-      background: #eef;
-      padding: 10px;
-      border-radius: 8px;
-      max-width: 500px;
-      margin: 0 auto 20px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    button {
-      background-color: #004466;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    button:hover {
-      background-color: #006699;
-    }
-    #registros {
-      margin-top: 20px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .registro {
-      background: white;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
+    body { background-color: #f0f2f5; }
+    #summaryTable tbody tr:hover { background: #e9f7ef; }
+    .card { box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .logo { width: 40px; }
   </style>
-  <meta name="google-adsense-account" content="ca-pub-7217968499057838">
 </head>
 <body>
-  <h1>Guana Solution Food</h1>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" class="logo me-2" alt="Logo">
+        Guanafood
+      </a>
+      <div class="ms-auto">
+        <a href="historial.html" class="btn btn-outline-secondary me-2">Ver Historial Completo</a>
+        <button id="resetBtn" class="btn btn-outline-danger">Reiniciar</button>
+      </div>
+    </div>
+  </nav>
 
-  <form id="facturaForm">
-    <label>Fecha: <input type="date" id="fecha" required></label>
-    <label>Desayunos: <input type="number" id="desayunos" required></label>
-    <label>Almuerzos: <input type="number" id="almuerzos" required></label>
-    <label>Cenas: <input type="number" id="cenas" required></label>
-    <label>Bidones: <input type="number" id="bidones" required></label>
-    <button type="submit">Agregar Venta</button>
-  </form>
+  <div class="container">
 
-  <div id="totals" style="display:none;">
-    <strong>Subtotal:</strong> <span id="subtotalDisplay"></span><br>
-    <strong>IVA (13%):</strong> <span id="ivaDisplay"></span><br>
-    <strong>Total:</strong> <span id="totalDisplay"></span>
+    <!-- Productos y precios -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Productos y precios</h5>
+        <ul class="list-unstyled mb-0">
+          <li>Desayuno: ₡2 500</li>
+          <li>Almuerzo: ₡2 500</li>
+          <li>Cena: ₡2 500</li>
+          <li>Bidón de Agua: ₡2 000</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Formulario de venta -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Registrar Venta</h5>
+        <form id="saleForm" class="row g-3">
+          <div class="col-md-3">
+            <label for="date" class="form-label">Fecha</label>
+            <input type="date" id="date" class="form-control" required>
+          </div>
+          <div class="col-md-2">
+            <label for="qtyBreakfast" class="form-label">Desayunos</label>
+            <input type="number" id="qtyBreakfast" class="form-control" min="0" value="0">
+          </div>
+          <div class="col-md-2">
+            <label for="qtyLunch" class="form-label">Almuerzos</label>
+            <input type="number" id="qtyLunch" class="form-control" min="0" value="0">
+          </div>
+          <div class="col-md-2">
+            <label for="qtyDinner" class="form-label">Cenas</label>
+            <input type="number" id="qtyDinner" class="form-control" min="0" value="0">
+          </div>
+          <div class="col-md-2">
+            <label for="qtyWater" class="form-label">Bidones</label>
+            <input type="number" id="qtyWater" class="form-control" min="0" value="0">
+          </div>
+          <div class="col-md-1 d-grid">
+            <button type="submit" class="btn btn-success mt-4">➕</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Resumen de ventas -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Resumen del Día</h5>
+        <div class="table-responsive">
+          <table id="summaryTable" class="table table-striped align-middle">
+            <thead class="table-success">
+              <tr>
+                <th>Fecha</th>
+                <th>Desayuno</th>
+                <th>Almuerzo</th>
+                <th>Cena</th>
+                <th>Bidón</th>
+                <th>Subtotal (₡)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot class="table-light">
+              <tr>
+                <th>Total Unidades</th>
+                <td id="totalBf">0</td>
+                <td id="totalLn">0</td>
+                <td id="totalDi">0</td>
+                <td id="totalWt">0</td>
+                <td id="totalAll">₡0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button id="downloadPDF" class="btn btn-primary">📄 Descargar PDF</button>
+      </div>
+    </div>
+
   </div>
 
-  <div id="registros"></div>
-
-  <div style="text-align:center; margin-top:20px;">
-    <button onclick="descargarPDF()">Descargar PDF</button>
-    <button onclick="borrarTodo()">Borrar Todo</button>
-    <button onclick="descargarCSV()">Descargar CSV</button>
-  </div>
-
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const { jsPDF } = window.jspdf;
-    let registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+    const prices = { breakfast:2500, lunch:2500, dinner:2500, water:2000 };
+    const form = document.getElementById('saleForm');
+    const tbody = document.querySelector('#summaryTable tbody');
+    const totalBf = document.getElementById('totalBf');
+    const totalLn = document.getElementById('totalLn');
+    const totalDi = document.getElementById('totalDi');
+    const totalWt = document.getElementById('totalWt');
+    const totalAll= document.getElementById('totalAll');
 
-    document.getElementById('facturaForm').addEventListener('submit', function (e) {
+    // Cargar & mostrar datos
+    function loadData() {
+      const data = JSON.parse(localStorage.getItem('sales')||'[]');
+      tbody.innerHTML = '';
+      let sumB=0, sumL=0, sumD=0, sumW=0, sumT=0;
+      data.forEach(item => {
+        const sub = item.bf*prices.breakfast + item.ln*prices.lunch + item.di*prices.dinner + item.wt*prices.water;
+        sumB += item.bf;
+        sumL += item.ln;
+        sumD += item.di;
+        sumW += item.wt;
+        sumT += sub;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.date}</td>
+          <td>${item.bf}</td>
+          <td>${item.ln}</td>
+          <td>${item.di}</td>
+          <td>${item.wt}</td>
+          <td>₡${sub}</td>`;
+        tbody.appendChild(tr);
+      });
+      totalBf.textContent = sumB;
+      totalLn.textContent = sumL;
+      totalDi.textContent = sumD;
+      totalWt.textContent = sumW;
+      totalAll.textContent= `₡${sumT}`;
+    }
+
+    // Submit del formulario
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const fecha = document.getElementById('fecha').value;
-      const desayunos = +document.getElementById('desayunos').value;
-      const almuerzos = +document.getElementById('almuerzos').value;
-      const cenas = +document.getElementById('cenas').value;
-      const bidones = +document.getElementById('bidones').value;
-
-      const totalDes = desayunos * precios.desayuno;
-      const totalAlm = almuerzos * precios.almuerzo;
-      const totalCen = cenas * precios.cena;
-      const totalBid = bidones * precios.bidon;
-      const subtotal = totalDes + totalAlm + totalCen + totalBid;
-      const iva = subtotal * 0.13;
-      const total = subtotal + iva;
-
-      registros.push({ fecha, desayunos, almuerzos, cenas, bidones, subtotal, iva, total });
-      localStorage.setItem('registros', JSON.stringify(registros));
-      mostrarRegistros();
-      mostrarTotals(subtotal, iva, total);
-      this.reset();
+      const date = document.getElementById('date').value;
+      const bf = +document.getElementById('qtyBreakfast').value;
+      const ln = +document.getElementById('qtyLunch').value;
+      const di = +document.getElementById('qtyDinner').value;
+      const wt = +document.getElementById('qtyWater').value;
+      if(!date) return alert('Selecciona la fecha');
+      let arr = JSON.parse(localStorage.getItem('sales')||'[]');
+      arr.push({ date, bf, ln, di, wt });
+      localStorage.setItem('sales', JSON.stringify(arr));
+      loadData();
+      form.reset();
     });
 
-    function mostrarTotals(sub, iva, tot) {
-      document.getElementById('subtotalDisplay').textContent = `₡${sub.toLocaleString()}`;
-      document.getElementById('ivaDisplay').textContent = `₡${iva.toLocaleString()}`;
-      document.getElementById('totalDisplay').textContent = `₡${tot.toLocaleString()}`;
-      document.getElementById('totals').style.display = 'block';
-    }
-
-    function mostrarRegistros() {
-      const contenedor = document.getElementById('registros');
-      contenedor.innerHTML = '';
-      registros.forEach(r => {
-        contenedor.innerHTML += `
-          <div class="registro">
-            <strong>Fecha:</strong> ${r.fecha}<br>
-            <strong>Desayunos:</strong> ${r.desayunos} - ₡${(r.desayunos*precios.desayuno).toLocaleString()}<br>
-            <strong>Almuerzos:</strong> ${r.almuerzos} - ₡${(r.almuerzos*precios.almuerzo).toLocaleString()}<br>
-            <strong>Cenas:</strong> ${r.cenas} - ₡${(r.cenas*precios.cena).toLocaleString()}<br>
-            <strong>Bidones:</strong> ${r.bidones} - ₡${(r.bidones*precios.bidon).toLocaleString()}<br>
-            <strong>Subtotal:</strong> ₡${r.subtotal.toLocaleString()}<br>
-            <strong>IVA:</strong> ₡${r.iva.toLocaleString()}<br>
-            <strong>Total:</strong> ₡${r.total.toLocaleString()}
-          </div>
-        `;
-      });
-    }
-
-    function descargarPDF() {
-      if (!registros.length) return alert('No hay ventas registradas.');
-      const doc = new jsPDF();
-      const head = ['Fecha','Ítem','Cantidad','Precio U','Total'];
-      const body = [];
-      let subtotalGeneral = 0;
-
-      registros.forEach(r => {
-        subtotalGeneral += r.subtotal;
-        body.push([r.fecha,'Desayunos',r.desayunos,`₡${precios.desayuno}`,`₡${(r.desayunos*precios.desayuno).toLocaleString()}`]);
-        body.push([r.fecha,'Almuerzos',r.almuerzos,`₡${precios.almuerzo}`,`₡${(r.almuerzos*precios.almuerzo).toLocaleString()}`]);
-        body.push([r.fecha,'Cenas',r.cenas,`₡${precios.cena}`,`₡${(r.cenas*precios.cena).toLocaleString()}`]);
-        body.push([r.fecha,'Bidones',r.bidones,`₡${precios.bidon}`,`₡${(r.bidones*precios.bidon).toLocaleString()}`]);
-        body.push(['','Subtotal','','',`₡${r.subtotal.toLocaleString()}`]);
-        body.push(['','','','','']);
-      });
-
-      doc.autoTable({ head:[head], body, startY:20, margin:{bottom:30} });
-
-      const ivaTotal = subtotalGeneral * 0.13;
-      const totalConIVA = subtotalGeneral + ivaTotal;
-      doc.addPage();
-      doc.setFontSize(16);
-      doc.text('Resumen Final',20,20);
-      doc.autoTable({
-        startY:30,
-        body: [
-          ['Subtotal General',`₡${subtotalGeneral.toLocaleString()}`],
-          ['IVA (13%)',`₡${ivaTotal.toLocaleString()}`],
-          ['Total con IVA',`₡${totalConIVA.toLocaleString()}`]
-        ]
-      });
-
-      doc.save('Guana_Solution_Food.pdf');
-    }
-
-    function descargarCSV() {
-      if (!registros.length) return alert('No hay ventas registradas.');
-      let csvContent = 'Fecha,Desayunos,Almuerzos,Cenas,Bidones,Subtotal,IVA,Total\n';
-      registros.forEach(r => {
-        csvContent += `${r.fecha},${r.desayunos},${r.almuerzos},${r.cenas},${r.bidones},${r.subtotal},${r.iva},${r.total}\n`;
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'Guana_Solution_Food.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function borrarTodo() {
-      if (confirm('¿Deseas borrar todo?')) {
-        registros = [];
-        localStorage.removeItem('registros');
-        mostrarRegistros();
-        document.getElementById('totals').style.display = 'none';
+    // Reiniciar
+    document.getElementById('resetBtn').onclick = ()=>{
+      if(confirm('¿Borrar todo el historial?')) {
+        localStorage.removeItem('sales');
+        loadData();
       }
-    }
+    };
 
-    mostrarRegistros();
+    // Descarga PDF con AutoTable
+    document.getElementById('downloadPDF').onclick = ()=>{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text('Guanafood – Historial de Ventas', 14, 16);
+      doc.autoTable({
+        startY: 20,
+        head: [[ 'Fecha','Desayuno','Almuerzo','Cena','Bidón','Subtotal (₡)' ]],
+        body: Array.from(tbody.querySelectorAll('tr')).map(r =>
+          Array.from(r.querySelectorAll('td')).map(td => td.textContent)
+        ),
+        foot: [['Totales:',
+          totalBf.textContent,
+          totalLn.textContent,
+          totalDi.textContent,
+          totalWt.textContent,
+          totalAll.textContent.replace('₡','')]]
+      });
+      doc.save('historial_ventas.pdf');
+    };
+
+    // Init
+    loadData();
   </script>
 </body>
 </html>
